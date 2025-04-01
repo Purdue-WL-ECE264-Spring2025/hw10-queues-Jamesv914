@@ -3,10 +3,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-// Manual forward declarations (missing from tile_game.h)
-bool is_solved(struct game_state state);
-bool make_move(struct game_state *state, int direction);
-
 void enqueue(struct queue *q, struct game_state state) {
     size_t value = serialize(state);
     insert_at_tail(&q->data, value); // FIFO: enqueue at tail
@@ -38,7 +34,7 @@ int number_of_moves(struct game_state start) {
             if (make_move(&next, dir)) {
                 size_t hash = serialize(next);
 
-                // Linear search to check if state was already visited
+                // Linear search for duplicate detection
                 bool seen = false;
                 for (struct list_node *n = visited.head; n != NULL; n = n->next) {
                     if (n->value == hash) {
@@ -58,5 +54,32 @@ int number_of_moves(struct game_state start) {
 
     free_list(q.data);
     free_list(visited);
-    return -1;  // Unreachable state
+    return -1;  // Unsolvable (shouldn't happen if inputs are valid)
+}
+
+// Check if tiles are in goal configuration
+bool is_solved(struct game_state state) {
+    uint8_t expected = 1;
+    for (int row = 0; row < 4; row++) {
+        for (int col = 0; col < 4; col++) {
+            if (row == 3 && col == 3) {
+                if (state.tiles[row][col] != 0) return false;
+            } else {
+                if (state.tiles[row][col] != expected) return false;
+                expected++;
+            }
+        }
+    }
+    return true;
+}
+
+// Try a direction (0: up, 1: down, 2: left, 3: right)
+bool make_move(struct game_state *state, int direction) {
+    switch (direction) {
+        case 0: move_up(state); return true;
+        case 1: move_down(state); return true;
+        case 2: move_left(state); return true;
+        case 3: move_right(state); return true;
+        default: return false;
+    }
 }
