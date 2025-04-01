@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+// Manual forward declarations (missing from tile_game.h)
+bool is_solved(struct game_state state);
+bool make_move(struct game_state *state, int direction);
+
 void enqueue(struct queue *q, struct game_state state) {
     size_t value = serialize(state);
     insert_at_tail(&q->data, value); // FIFO: enqueue at tail
